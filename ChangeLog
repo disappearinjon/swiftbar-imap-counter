@@ -1,1 +1,5 @@
+1.0 - Initial release, but updated
+* Change version number to match standard methodology
+* Added tags at https://github.com/matryer/bitbar#writing-plugins to script
+* Added more TODO items
 0.0.1 - Initial Release

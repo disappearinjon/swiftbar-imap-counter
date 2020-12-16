@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # <bitbar.title>IMAP Counter</bitbar.title>
+# <bitbar.version>1.0</bitbar.version>
 # <bitbar.author>Jon Lasser</bitbar.author>
 # <bitbar.author.github>disappearinjon</bitbar.author.github>
 # <bitbar.desc>Count unread IMAP messages in inbox</bitbar.desc>
+# <bitbar.abouturl>https://github.com/disappearinjon/swiftbar-imap-counter</bitbar.abouturl>
 # <swiftbar.hideAbout>true</swiftbar.hideAbout>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
 # <swiftbar.hideLastUpdated>true</swiftbar.hideLastUpdated>
