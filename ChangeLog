@@ -1,5 +1,12 @@
-1.0 - Initial release, but updated
+1.1
+* With configuration show all or new messages in dropdown menu
+* Implement "Refresh" menu item to update inbox
+* Configurable colors for notifications
+* Modularize IMAP and printing code to simplify updates
+* Add more blank lines to simplify reading configuration
+
+1.0 - Initial release, but updated 2020-12-16
 * Change version number to match standard methodology
 * Added tags at https://github.com/matryer/bitbar#writing-plugins to script
 * Added more TODO items
-0.0.1 - Initial Release
+0.0.1 - Initial Release 2020-12-16

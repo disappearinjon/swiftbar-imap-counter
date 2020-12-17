@@ -1,7 +1,4 @@
 * Add metadata for image and dependencies
-* Configurable colors for notifications
 * Improved notification icons
-* List new messages in dropdown
 * Ideally, links to open inbox and/or read individual messages
 * Configuration via dropdown
-* Refresh via dropdown

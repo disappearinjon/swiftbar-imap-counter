@@ -25,10 +25,28 @@ password = password
 ##########
 
 # TCP port of IMAP. SSL-only servers use 993
+#
 # port = 143
+
 # IMAP default mailbox is INBOX
+#
 # mailbox = INBOX
+
 # If True, use SSL for whole connection. Usually port 993.
+#
 # usessl = False
+
 # If true, negotiate encryption on a non-SSL session
+#
 # inlinetls = False
+
+# If all, print summaries of all inbox messages in the menu. If new,
+# print summaries of unread messages in the menu.
+#
+# expand = False
+
+# Colors for the number of unread messages, in the menu bar.
+# Light or dark depends on your OS Appearance setting.
+#
+# unread_light = red
+# unread_dark = yellow
