@@ -1,3 +1,7 @@
+1.1.1 - Bugfix release 2021-05-22
+* Prettier printing of Envelope icon when mail receieved
+* Issue 1: Exception when enabling UTF-8 fixed
+
 1.1
 * With configuration show all or new messages in dropdown menu
 * Implement "Refresh" menu item to update inbox
