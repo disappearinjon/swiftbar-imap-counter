@@ -1,6 +1,6 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # <bitbar.title>IMAP Counter</bitbar.title>
-# <bitbar.version>1.1</bitbar.version>
+# <bitbar.version>1.1.1</bitbar.version>
 # <bitbar.author>Jon Lasser</bitbar.author>
 # <bitbar.author.github>disappearinjon</bitbar.author.github>
 # <bitbar.desc>Count unread IMAP messages in inbox</bitbar.desc>
@@ -135,7 +135,10 @@ def startIMAP(config):
         errors.append("login result: {}: {}".format(ok, result))
 
     # Enable the UTF-8 capability, but ignore any errors
-    imap.enable(UTF8CAP)
+    try:
+        imap.enable(UTF8CAP)
+    except imaplib.error:
+        pass
 
     return imap, errors
 
@@ -234,9 +237,9 @@ def printHeader(config, mailCount):
     if mailCount == 0:
         print(':envelope:')
     else:
-        print(':envelope: {} | color={},{}'.format(mailCount,
-                                                   config[UNREAD_LIGHT],
-                                                   config[UNREAD_DARK]))
+        print(':envelope.fill: {} | color={},{}'.format(mailCount,
+                                                        config[UNREAD_LIGHT],
+                                                        config[UNREAD_DARK]))
     print('---')
     return
 
