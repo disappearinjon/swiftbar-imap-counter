@@ -48,8 +48,8 @@ CONFIG_DEFAULTS = {
     MAILBOX_URL: "",
     INLINE_TLS: False,
     EXPAND: "",      # Expand nothing
-    UNREAD_LIGHT: "red",
-    UNREAD_DARK: "yellow"
+    UNREAD_LIGHT: "black",
+    UNREAD_DARK: "white"
 }
 
 # string constants
@@ -236,12 +236,17 @@ def stopIMAP(imap):
 
 def printHeader(config, mailCount):
     """Print the part of the output that appears in the menu bar"""
+
+    # Correct the color names
+    light = config[UNREAD_LIGHT].lower()
+    dark = config[UNREAD_DARK].lower()
+
     if mailCount == 0:
-        print(':envelope:')
+        print(':envelope: ')
     else:
-        print(':envelope.fill: {} | color={},{}'.format(mailCount,
-                                                        config[UNREAD_LIGHT],
-                                                        config[UNREAD_DARK]))
+        print(':envelope.fill: {} | color={},{} '
+              'sfcolor={},{}'.format(mailCount,
+                                     light, dark, light, dark))
     print('---')
     print('Check Mail | refresh=true')
     print('---')

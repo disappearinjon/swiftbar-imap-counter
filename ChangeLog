@@ -1,20 +1,24 @@
-1.2
+1.2.0
+* Change default colors to black and white, for no color indicator on unread messages
+* Work around a bug in SwiftBar that does not allow mixed-case color names
 * Move "Check Mail" item to top of dropdown
 * Implement "Open Mail" dropdown menu item - uses mailbox_url setting
 * Minor string-printing cleanup
+* Update the To-Do list, removing 1.2, 1.1, and 1.1.1 features
+* Configuration file and README updates
 
 1.1.1 - Bugfix release 2021-05-22
 * Prettier printing of Envelope icon when mail receieved
 * Issue 1: Exception when enabling UTF-8 fixed
 
-1.1
+1.1.0
 * With configuration show all or new messages in dropdown menu
 * Implement "Refresh" menu item to update inbox
 * Configurable colors for notifications
 * Modularize IMAP and printing code to simplify updates
 * Add more blank lines to simplify reading configuration
 
-1.0 - Initial release, but updated 2020-12-16
+1.0.0 - Initial release, but updated 2020-12-16
 * Change version number to match standard methodology
 * Added tags at https://github.com/matryer/bitbar#writing-plugins to script
 * Added more TODO items

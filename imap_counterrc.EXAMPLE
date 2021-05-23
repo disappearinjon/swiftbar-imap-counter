@@ -24,6 +24,9 @@ password = password
 # Defaults are shown but commented out
 ##########
 
+##########
+# Mail Server Settings
+
 # TCP port of IMAP. SSL-only servers use 993
 #
 # port = 143
@@ -40,6 +43,9 @@ password = password
 #
 # inlinetls = False
 
+##########
+# Appearance Settings
+
 # If all, print summaries of all inbox messages in the menu. If new,
 # print summaries of unread messages in the menu.
 #
@@ -49,10 +55,18 @@ password = password
 # which will not display an "Open Mail" item in the dropdown menu.
 # Setting this to a full URL (eg. http://mail.example.org/inbox/)
 # will enable the "Open Mail" line.
-# mailbox_url = 
+# mailbox_url =
 
-# Colors for the number of unread messages, in the menu bar.
+# Colors for the envelope and number of unread messages, in the menu
+# bar, when there are messages.
+#
+# Color names are the standard CSS color names. See
+#
+#     https://www.w3schools.com/cssref/css_colors.asp
+#
+# for a handy reference.
+#
 # Light or dark depends on your OS Appearance setting.
 #
-# unread_light = red
-# unread_dark = yellow
+# unread_light = black
+# unread_dark = white

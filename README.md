@@ -38,7 +38,12 @@ for specifics.
 # Use
 
 It sits there in your menu bar and tells you how many messages you've
-got. That's it, that's the plugin.
+got. You can see a list of messages when you've clicked the dropdown,
+depending on your *expand* setting, as well as refresh your message
+counter and (if *mailbox_url* is set) open your inbox directly.
+
+You can also set a configuration option that will change the color of the
+icon and count in the menu bar when mail is received.
 
 # Getting Help
 
