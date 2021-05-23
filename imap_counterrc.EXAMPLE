@@ -45,6 +45,12 @@ password = password
 #
 # expand = False
 
+# Mailbox URL is the URL to your mailbox. Default is an empty string,
+# which will not display an "Open Mail" item in the dropdown menu.
+# Setting this to a full URL (eg. http://mail.example.org/inbox/)
+# will enable the "Open Mail" line.
+# mailbox_url = 
+
 # Colors for the number of unread messages, in the menu bar.
 # Light or dark depends on your OS Appearance setting.
 #

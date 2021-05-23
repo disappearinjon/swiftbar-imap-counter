@@ -31,6 +31,7 @@ EXPAND = "expand"
 IMAP_SERVER = "server"
 IMAP_PORT = "port"
 IMAP_MAILBOX = "mailbox"
+MAILBOX_URL = "mailbox_url"
 INLINE_TLS = "inlinetls"
 PASSWORD = "password"
 UNREAD_LIGHT = "unread_light"
@@ -44,6 +45,7 @@ CONFIG_DEFAULTS = {
     IMAP_PORT: 443,
     IMAP_MAILBOX: "INBOX",
     USE_SSL: False,
+    MAILBOX_URL: "",
     INLINE_TLS: False,
     EXPAND: "",      # Expand nothing
     UNREAD_LIGHT: "red",
@@ -241,6 +243,8 @@ def printHeader(config, mailCount):
                                                         config[UNREAD_LIGHT],
                                                         config[UNREAD_DARK]))
     print('---')
+    print('Check Mail | refresh=true')
+    print('---')
     return
 
 
@@ -258,8 +262,8 @@ def printBody(count, imap, config):
             elif what in (NEW):
                 newOnly = True
             else:
-                errors.append("Do not know how to expand "
-                              "{} messages".format(what))
+                errors.append('Do not know how to expand '
+                              '{} messages'.format(what))
             messages, newerrs = getMessages(imap, newOnly=newOnly)
             errors.extend(newerrs)
     if len(messages):
@@ -267,20 +271,21 @@ def printBody(count, imap, config):
             print(item)
     else:
         if config[EXPAND] == NEW:
-            print("No New Messages")
+            print('No New Messages')
         elif config[EXPAND] == ALL:
-            print("No Messages")
+            print('No Messages')
 
-    print("---")
+    print('---')
     return errors
 
 
-def printFooter(errors):
-    """Print the never-changing footer to the menu."""
-    print('Check Mail | refresh=true')
-    print('---')
+def printFooter(errors, config):
+    """Print the menu footer"""
+    if config[MAILBOX_URL]:
+        print('Open Mail | href={}'.format(config[MAILBOX_URL]))
+        print('---')
     for line in errors:
-        print(line, "| color=red")
+        print(line, '| color=red')
 
 
 def main():
@@ -299,7 +304,7 @@ def main():
     # Print our result
     printHeader(config, mailCount)
     errors.extend(printBody(mailCount, imap, config))
-    printFooter(errors)
+    printFooter(errors, config)
 
     # Shut down IMAP
     stopIMAP(imap)

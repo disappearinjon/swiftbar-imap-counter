@@ -1,3 +1,8 @@
+1.2
+* Move "Check Mail" item to top of dropdown
+* Implement "Open Mail" dropdown menu item - uses mailbox_url setting
+* Minor string-printing cleanup
+
 1.1.1 - Bugfix release 2021-05-22
 * Prettier printing of Envelope icon when mail receieved
 * Issue 1: Exception when enabling UTF-8 fixed
