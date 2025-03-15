@@ -180,7 +180,11 @@ def decode_header(header):
     encoding = 1  # tuple index for the header's encoding
     decoded = email.header.decode_header(header)
     if isinstance(decoded[0][text], bytes):
-        return decoded[0][text].decode(decoded[0][encoding])
+        if decoded[0][encoding]:
+            my_encoding = decoded[0][encoding]
+        else:
+            my_encoding = 'utf-8'
+        return decoded[0][text].decode(my_encoding)
     else:
         return decoded[0][text]
 
