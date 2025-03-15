@@ -8,8 +8,7 @@ for specifics.
 
 # Requirements
 * SwiftBar
-* Python 3 (Tested on Python 3.8.6; should work on the 3.8.2 that ships
-  with Big Sur.)
+* Python 3.6 or newer (Currently testing on Python 3.11)
 
 # Installation
 

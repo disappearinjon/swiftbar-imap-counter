@@ -1,4 +1,6 @@
 1.2.0
+* Reformat code in Black; address Pylint and Flake8 concerns
+* Fix a bug regarding null encoding of message titles
 * Change default colors to black and white, for no color indicator on unread messages
 * Work around a bug in SwiftBar that does not allow mixed-case color names
 * Move "Check Mail" item to top of dropdown
