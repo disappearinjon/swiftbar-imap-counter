@@ -19,7 +19,6 @@ It uses a configuration file and queries a remote IMAP server, reporting the
 message count in the menu bar.
 """
 
-import configparser
 import email.header
 import imaplib
 import os
@@ -66,8 +65,8 @@ TRUESTRINGS = ("1", "true", "on", "yes")
 FALSESTRINGS = ("no", "none", "nothing", "false")
 
 
-def getConfig():
-    """getConfig gets a configuration from a file and returns it as a dict"""
+def get_config():
+    """get_config gets a configuration from a file and returns it as a dict"""
 
     # Get path for configuration file
     filename = os.path.expanduser(CONFIGFILE)
@@ -109,7 +108,7 @@ def getConfig():
     return config
 
 
-def startIMAP(config):
+def start_imap(config):
     """Start an IMAP session, enable TLS or SSL if available,
     and then log in.
 
@@ -145,9 +144,9 @@ def startIMAP(config):
     return imap, errors
 
 
-def getMailCount(imap, config):
-    """getMailCount takes an IMAP connection and a configuration block
-    (say, from getConfig) and returns a tuple containing the number of
+def get_mail_count(imap, config):
+    """get_mail_count takes an IMAP connection and a configuration block
+    (say, from get_config) and returns a tuple containing the number of
     digits, and a list of error messages."""
     errors = []
 
@@ -169,7 +168,7 @@ def getMailCount(imap, config):
     return len(messages), errors
 
 
-def decodeHeader(header):
+def decode_header(header):
     """Given the contents of a header (minus the header itself), return
     a string containing the first part of the decoded header.
 
@@ -177,16 +176,16 @@ def decodeHeader(header):
     lines that we want (the text name) are the first part of two. This may not
     be a generally extensible strategy."""
 
-    TEXT = 0      # tuple index for the encoded header text
-    ENCODING = 1  # tuple index for the header's encoding
+    text = 0      # tuple index for the encoded header text
+    encoding = 1  # tuple index for the header's encoding
     decoded = email.header.decode_header(header)
-    if isinstance(decoded[0][TEXT], bytes):
-        return decoded[0][TEXT].decode(decoded[0][ENCODING])
+    if isinstance(decoded[0][text], bytes):
+        return decoded[0][text].decode(decoded[0][encoding])
     else:
-        return decoded[0][TEXT]
+        return decoded[0][text]
 
 
-def getMessages(imap, newOnly=True):
+def get_messages(imap, new_only=True):
     """Given an IMAP connection and whether or not to include only new
     messages, return a tuple containing a list of message subjects and
     a list of error messages."""
@@ -194,7 +193,7 @@ def getMessages(imap, newOnly=True):
     errors = []
 
     # Set search type based on what we're expecting to find
-    if newOnly:
+    if new_only:
         criterion = "NOT SEEN"
     else:
         criterion = "ALL"
@@ -202,14 +201,14 @@ def getMessages(imap, newOnly=True):
     # Get messages to look at
     ok, result = imap.search(None, criterion)
     if ok != OK:
-        errors.append("getMessages search result: {}: {}".format(ok, result))
+        errors.append("get_messages search result: {}: {}".format(ok, result))
         return (messages, errors)
 
     # Iterate through messages and grab the subjects
-    for messageNumber in result[0].split():
-        ok, data = imap.fetch(messageNumber, '(RFC822.HEADER)')
+    for message_number in result[0].split():
+        ok, data = imap.fetch(message_number, '(RFC822.HEADER)')
         if ok != OK:
-            errors.append("failed to get message {}: {}".format(messageNumber,
+            errors.append("failed to get message {}: {}".format(message_number,
                                                                 data))
         # There's some work to decode these...
         for item in data:
@@ -219,33 +218,33 @@ def getMessages(imap, newOnly=True):
             subject = ""
             for line in item[1].decode("utf-8").splitlines():
                 if line.strip().startswith(SUBJECT):
-                    subject = decodeHeader(line[len(SUBJECT):])
+                    subject = decode_header(line[len(SUBJECT):])
                 if line.strip().startswith(FROMLINE):
-                    fromline = decodeHeader(line[len(FROMLINE):])
+                    fromline = decode_header(line[len(FROMLINE):])
             messages.append(fromline + ": " + subject)
     # And go home
     return messages, errors
 
 
-def stopIMAP(imap):
+def stop_imap(imap):
     """Shut down an open IMAP connection. No return value"""
     imap.close()
     imap.logout()
     return
 
 
-def printHeader(config, mailCount):
+def print_header(config, mail_count):
     """Print the part of the output that appears in the menu bar"""
 
     # Correct the color names
     light = config[UNREAD_LIGHT].lower()
     dark = config[UNREAD_DARK].lower()
 
-    if mailCount == 0:
+    if mail_count == 0:
         print(':envelope: ')
     else:
         print(':envelope.fill: {} | color={},{} '
-              'sfcolor={},{}'.format(mailCount,
+              'sfcolor={},{}'.format(mail_count,
                                      light, dark, light, dark))
     print('---')
     print('Check Mail | refresh=true')
@@ -253,7 +252,7 @@ def printHeader(config, mailCount):
     return
 
 
-def printBody(count, imap, config):
+def print_body(count, imap, config):
     """Given an IMAP and configuration, print the middle section of the menu.
     Return any additional errors."""
     errors = []
@@ -263,13 +262,13 @@ def printBody(count, imap, config):
         what = config[EXPAND].strip().lower()
         if what not in FALSESTRINGS:
             if what in (ALL):
-                newOnly = False
+                new_only = False
             elif what in (NEW):
-                newOnly = True
+                new_only = True
             else:
                 errors.append('Do not know how to expand '
                               '{} messages'.format(what))
-            messages, newerrs = getMessages(imap, newOnly=newOnly)
+            messages, newerrs = get_messages(imap, new_only=new_only)
             errors.extend(newerrs)
     if len(messages):
         for item in messages:
@@ -284,7 +283,7 @@ def printBody(count, imap, config):
     return errors
 
 
-def printFooter(errors, config):
+def print_footer(errors, config):
     """Print the menu footer"""
     if config[MAILBOX_URL]:
         print('Open Mail | href={}'.format(config[MAILBOX_URL]))
@@ -297,22 +296,22 @@ def main():
     """You are here. Do the print stuff, then exit."""
 
     # Get our configuration
-    config = getConfig()
+    config = get_config()
 
     # Log into imap
-    imap, errors = startIMAP(config)
+    imap, errors = start_imap(config)
 
     # Get our mail count
-    mailCount, newerrs = getMailCount(imap, config)
+    mail_count, newerrs = get_mail_count(imap, config)
     errors.extend(newerrs)
 
     # Print our result
-    printHeader(config, mailCount)
-    errors.extend(printBody(mailCount, imap, config))
-    printFooter(errors, config)
+    print_header(config, mail_count)
+    errors.extend(print_body(mail_count, imap, config))
+    print_footer(errors, config)
 
     # Shut down IMAP
-    stopIMAP(imap)
+    stop_imap(imap)
 
 
 if __name__ == "__main__":
