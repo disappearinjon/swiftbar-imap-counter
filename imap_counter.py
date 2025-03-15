@@ -75,12 +75,12 @@ def get_config():
     filebits = os.stat(filename)
     if filebits[stat.ST_MODE] & (stat.S_IRWXG | stat.S_IRWXO) > 0:
         sys.stderr.write(
-            "Fatal: configuration file {} " "is not limited to user.\n".format(filename)
+            f"Fatal: configuration file {filename} " "is not limited to user.\n"
         )
         sys.exit(1)
 
     # Read the file
-    with open(filename, "r") as configfile:
+    with open(filename, "r", encoding="utf-8") as configfile:
         config_updates = configfile.read()
         configfile.close()
 
@@ -93,18 +93,14 @@ def get_config():
             continue
         if line.startswith("#"):  # ignore comments
             continue
-        k, v = line.split("=")
-        k = k.strip().lower()
-        v = v.strip()
+        key, value = line.split("=")
+        key = key.strip().lower()
+        value = value.strip()
 
         # Fix our true/false values
-        if k == USE_SSL or k == INLINE_TLS:
-            if v.lower() in TRUESTRINGS:
-                v = True
-            else:
-                v = False
-
-        config[k] = v
+        if key in (USE_SSL, INLINE_TLS):
+            value = bool(value.lower() in TRUESTRINGS)
+        config[key] = value
 
     return config
 
@@ -128,16 +124,16 @@ def start_imap(config):
     if config[INLINE_TLS]:
         ok, result = imap.starttls(ssl_context=None)
         if ok != OK:
-            sys.stderr.write("could not start tls: " "{}: {}\n".format(ok, result))
+            sys.stderr.write(f"could not start tls: {ok}: {result}\n")
             sys.exit(1)
     ok, result = imap.login(config[USERNAME], config[PASSWORD])
     if ok != OK:
-        errors.append("login result: {}: {}".format(ok, result))
+        errors.append(f"login result: {ok}: {result}")
 
     # Enable the UTF-8 capability, but ignore any errors
     try:
         imap.enable(UTF8CAP)
-    except imaplib.error:
+    except imap4.error:
         pass
 
     return imap, errors
@@ -152,12 +148,12 @@ def get_mail_count(imap, config):
     # Select the inbox to count
     ok, result = imap.select(config[IMAP_MAILBOX], readonly=True)
     if ok != OK:
-        errors.append("select result: {}: {}".format(ok, result))
+        errors.append(f"select result: {ok}: {result}")
 
     # Find unseen messages
     ok, result = imap.search(None, "NOT SEEN")
     if ok != OK:
-        errors.append("search result: {}: {}".format(ok, result))
+        errors.append(f"search result: {ok}: {result}")
 
     # Finally we can count our messages
     rawmessages = result[0]
@@ -184,8 +180,7 @@ def decode_header(header):
         else:
             my_encoding = "utf-8"
         return decoded[0][text].decode(my_encoding)
-    else:
-        return decoded[0][text]
+    return decoded[0][text]
 
 
 def get_messages(imap, new_only=True):
@@ -204,14 +199,14 @@ def get_messages(imap, new_only=True):
     # Get messages to look at
     ok, result = imap.search(None, criterion)
     if ok != OK:
-        errors.append("get_messages search result: {}: {}".format(ok, result))
+        errors.append(f"get_messages search result: {ok}: {result}")
         return (messages, errors)
 
     # Iterate through messages and grab the subjects
     for message_number in result[0].split():
         ok, data = imap.fetch(message_number, "(RFC822.HEADER)")
         if ok != OK:
-            errors.append("failed to get message {}: {}".format(message_number, data))
+            errors.append(f"failed to get message {message_number}: {data}")
         # There's some work to decode these...
         for item in data:
             if len(item) < 2:  # the closing bit is too short, skip it
@@ -232,7 +227,6 @@ def stop_imap(imap):
     """Shut down an open IMAP connection. No return value"""
     imap.close()
     imap.logout()
-    return
 
 
 def print_header(config, mail_count):
@@ -246,16 +240,15 @@ def print_header(config, mail_count):
         print(":envelope: ")
     else:
         print(
-            ":envelope.fill: {} | color={},{} "
-            "sfcolor={},{}".format(mail_count, light, dark, light, dark)
+            f":envelope.fill: {mail_count} | color={light},{dark} "
+            f"sfcolor={light},{dark}"
         )
     print("---")
     print("Check Mail | refresh=true")
     print("---")
-    return
 
 
-def print_body(count, imap, config):
+def print_body(imap, config):
     """Given an IMAP and configuration, print the middle section of the menu.
     Return any additional errors."""
     errors = []
@@ -269,10 +262,11 @@ def print_body(count, imap, config):
             elif what in (NEW):
                 new_only = True
             else:
-                errors.append("Do not know how to expand " "{} messages".format(what))
+                new_only = False
+                errors.append(f"Do not know how to expand {what} messages")
             messages, newerrs = get_messages(imap, new_only=new_only)
             errors.extend(newerrs)
-    if len(messages):
+    if len(messages) > 0:
         for item in messages:
             print(item)
     else:
@@ -288,7 +282,7 @@ def print_body(count, imap, config):
 def print_footer(errors, config):
     """Print the menu footer"""
     if config[MAILBOX_URL]:
-        print("Open Mail | href={}".format(config[MAILBOX_URL]))
+        print(f"Open Mail | href={config[MAILBOX_URL]}")
         print("---")
     for line in errors:
         print(line, "| color=red")
@@ -309,7 +303,7 @@ def main():
 
     # Print our result
     print_header(config, mail_count)
-    errors.extend(print_body(mail_count, imap, config))
+    errors.extend(print_body(imap, config))
     print_footer(errors, config)
 
     # Shut down IMAP
