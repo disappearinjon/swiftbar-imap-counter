@@ -1,0 +1,24 @@
+[project]
+name = "swiftbar-imap-counter"
+version = "1.2.0"
+description = "SwiftBar plugin to show IMAP messages in Menu Bar"
+authors = [
+    {name = "Jon Lasser",email = "jon@lasser.org"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8.1"
+dependencies = [
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+pylint = "*"
+flake8 = "*"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
