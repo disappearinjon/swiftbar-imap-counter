@@ -7,6 +7,9 @@
 * Implement "Open Mail" dropdown menu item - uses mailbox_url setting
 * Minor string-printing cleanup
 * Update the To-Do list, removing 1.2, 1.1, and 1.1.1 features
+* Implement Poetry for development dependency management
+* Include sample pre-commit hook
+* Include .gitignore file
 * Configuration file and README updates
 
 1.1.1 - Bugfix release 2021-05-22

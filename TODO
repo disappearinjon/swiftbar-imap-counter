@@ -1,2 +1,4 @@
-* Add metadata for image and dependencies
-* Configuration via dropdown
+* Semantic Parsing of imaplib output: Our current handling is very
+  brittle. We should do better.
+* Unit tests: Our code should be testable, and tested.
+* Get added to the Swiftbar plugin directory
