@@ -19,6 +19,7 @@ It uses a configuration file and queries a remote IMAP server, reporting the
 message count in the menu bar.
 """
 
+from collections import OrderedDict
 import email.header
 import imaplib
 import os
@@ -31,12 +32,14 @@ IMAP_SERVER = "server"
 IMAP_PORT = "port"
 IMAP_MAILBOX = "mailbox"
 MAILBOX_URL = "mailbox_url"
+MESSAGE_URL = "message_url"
 INLINE_TLS = "inlinetls"
 PASSWORD = "password"
 UNREAD_LIGHT = "unread_light"
 UNREAD_DARK = "unread_dark"
 USE_SSL = "usessl"
 USERNAME = "username"
+RFC_8474 = "rfc_8474"
 
 # Configuration items
 CONFIGFILE = "~/.imap_counterrc"  # no way to override yet
@@ -45,10 +48,12 @@ CONFIG_DEFAULTS = {
     IMAP_MAILBOX: "INBOX",
     USE_SSL: False,
     MAILBOX_URL: "",
+    MESSAGE_URL: "",
     INLINE_TLS: False,
     EXPAND: "",  # Expand nothing
     UNREAD_LIGHT: "black",
     UNREAD_DARK: "white",
+    RFC_8474: False,  # This will get calculated later
 }
 
 # string constants
@@ -59,6 +64,7 @@ SERVER = "Server"  # used for config file sections
 SUBJECT = "Subject: "  # used for mail header parsing
 FROMLINE = "From: "  # used for mail header parsing
 UTF8CAP = "UTF8=ACCEPT"  # for enabling UTF-8 capability
+OBJECTID = "OBJECTID"  # for recognizing ObjectID capability
 # strings that all equal "true"
 TRUESTRINGS = ("1", "true", "on", "yes")
 # strings that all equal "false"
@@ -75,7 +81,7 @@ def get_config():
     filebits = os.stat(filename)
     if filebits[stat.ST_MODE] & (stat.S_IRWXG | stat.S_IRWXO) > 0:
         sys.stderr.write(
-            f"Fatal: configuration file {filename} " "is not limited to user.\n"
+            f"Fatal: configuration file {filename} is not limited to user.\n"
         )
         sys.exit(1)
 
@@ -183,11 +189,50 @@ def decode_header(header):
     return decoded[0][text]
 
 
-def get_messages(imap, new_only=True):
+def decode_message(imap, message_number, rfc_8474):
+    """A misnomer, as it's decoding the parts of individual message
+    headers that we care about. We need our IMAP connection, a message
+    number, and whether or not we should be trying for RFC 8474 object
+    IDs in our results.
+
+    We return a message key (either the message number or object ID),
+    the From line, the Subject line text, and errors."""
+    errors = []
+    fromline = ""
+    subject = ""
+
+    if rfc_8474:
+        ok, data = imap.fetch(message_number, "(EMAILID RFC822.HEADER)")
+    else:
+        ok, data = imap.fetch(message_number, "(RFC822.HEADER)")
+    if ok != OK:
+        errors.append(f"failed to get message {message_number}: {data}")
+
+    # There's some work to decode these...
+    if "EMAILID" in str(data[0][0]):  # RFC 8474 email ID
+        header_parts = str(data[0][0]).split(" ")
+        message_key = header_parts[2][1:-1]
+    else:
+        message_key = message_number
+    for item in data:
+        if len(item) < 2:  # the closing bit is too short, skip it
+            continue
+        for line in item[1].decode("utf-8").splitlines():
+            if line.strip().startswith(SUBJECT):
+                header_len = len(SUBJECT)
+                subject = decode_header(line[header_len:])
+            if line.strip().startswith(FROMLINE):
+                header_len = len(FROMLINE)
+                fromline = decode_header(line[header_len:])
+    return message_key, fromline, subject, errors
+
+
+def get_messages(imap, new_only=True, rfc_8474=False):
     """Given an IMAP connection and whether or not to include only new
-    messages, return a tuple containing a list of message subjects and
-    a list of error messages."""
-    messages = []
+    messages, return an ordered dict containing each message's subject,
+    keyed on message ID if available (and incrementing integers if not)
+    and a list of error messages."""
+    messages = OrderedDict()
     errors = []
 
     # Set search type based on what we're expecting to find
@@ -204,21 +249,11 @@ def get_messages(imap, new_only=True):
 
     # Iterate through messages and grab the subjects
     for message_number in result[0].split():
-        ok, data = imap.fetch(message_number, "(RFC822.HEADER)")
-        if ok != OK:
-            errors.append(f"failed to get message {message_number}: {data}")
-        # There's some work to decode these...
-        for item in data:
-            if len(item) < 2:  # the closing bit is too short, skip it
-                continue
-            fromline = ""
-            subject = ""
-            for line in item[1].decode("utf-8").splitlines():
-                if line.strip().startswith(SUBJECT):
-                    subject = decode_header(line[len(SUBJECT) :])
-                if line.strip().startswith(FROMLINE):
-                    fromline = decode_header(line[len(FROMLINE) :])
-            messages.append(fromline + ": " + subject)
+        message_key, fromline, subject, err = decode_message(
+            imap, message_number, rfc_8474
+        )
+        errors.extend(err)
+        messages[message_key] = fromline + ": " + subject
     # And go home
     return messages, errors
 
@@ -264,11 +299,16 @@ def print_body(imap, config):
             else:
                 new_only = False
                 errors.append(f"Do not know how to expand {what} messages")
-            messages, newerrs = get_messages(imap, new_only=new_only)
+            messages, newerrs = get_messages(
+                imap, new_only=new_only, rfc_8474=config[RFC_8474]
+            )
             errors.extend(newerrs)
-    if len(messages) > 0:
-        for item in messages:
-            print(item)
+        for key, value in messages.items():
+            if config[RFC_8474]:
+                my_url = config[MESSAGE_URL].replace("%s", key)
+                print(f"{value} | href={my_url}")
+            else:
+                print(value)
     else:
         if config[EXPAND] == NEW:
             print("No New Messages")
@@ -296,6 +336,16 @@ def main():
 
     # Log into imap
     imap, errors = start_imap(config)
+
+    # See if we're good to go for RFC 8474
+    ok, all_caps = imap.capability()
+    if ok != OK:
+        errors.append(f"capability result: {ok}: {all_caps}")
+    capabilities = str(all_caps[0])
+    if OBJECTID in capabilities and config[MESSAGE_URL]:
+        config[RFC_8474] = True
+    else:
+        config[RFC_8474] = False
 
     # Get our mail count
     mail_count, newerrs = get_mail_count(imap, config)

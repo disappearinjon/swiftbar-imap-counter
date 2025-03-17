@@ -57,6 +57,13 @@ password = password
 # will enable the "Open Mail" line.
 # mailbox_url =
 
+# Message URL is the message-specific URL. Use %s to represent the
+# message ID. For example, on Fastmail this might be
+#
+#     https://app.fastmail.com/mail/Inbox/%s
+#
+# message_url =
+
 # Colors for the envelope and number of unread messages, in the menu
 # bar, when there are messages.
 #
